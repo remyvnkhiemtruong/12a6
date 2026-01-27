@@ -1,0 +1,214 @@
+<%- include('../layouts/main', { body: `
+<!-- Feature 101-115: Kitchen Display System (KDS) -->
+<div class="min-h-screen bg-gray-900 text-white">
+  <!-- Header -->
+  <header class="bg-gray-800 shadow-lg sticky top-0 z-40">
+    <div class="max-w-full mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <h1 class="font-display font-bold text-2xl text-orange-500">🍳 Bếp</h1>
+          <span class="text-gray-400">|</span>
+          <span class="text-sm text-gray-400">Xin chào, <%= user.displayName %></span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <!-- Feature 259: Clock -->
+          <div id="clock" class="font-mono text-2xl font-bold"></div>
+          
+          <!-- Feature 104: Zone filter -->
+          <select id="zone-filter" class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm">
+            <option value="all" <%= currentZone === 'all' ? 'selected' : '' %>>Tất cả khu vực</option>
+            <option value="hot_kitchen" <%= currentZone === 'hot_kitchen' ? 'selected' : '' %>>🔥 Bếp nóng</option>
+            <option value="beverage" <%= currentZone === 'beverage' ? 'selected' : '' %>>🧃 Pha chế</option>
+            <option value="dessert" <%= currentZone === 'dessert' ? 'selected' : '' %>>🍰 Tráng miệng</option>
+          </select>
+          
+          <!-- Feature 115: Fullscreen -->
+          <button id="fullscreen-btn" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+          </button>
+          
+          <!-- Feature 108-109: Out of stock management -->
+          <button id="stock-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors">
+            📦 Quản lý kho
+          </button>
+          
+          <!-- Logout -->
+          <button id="logout-btn" class="p-2 hover:bg-gray-700 rounded-lg text-red-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Feature 102: Aggregated view toggle -->
+  <div class="max-w-full mx-auto px-4 py-3 bg-gray-800 border-b border-gray-700">
+    <div class="flex gap-3">
+      <button class="view-toggle px-4 py-2 rounded-lg font-medium transition-colors bg-orange-500 text-white" data-view="orders">
+        📋 Theo đơn
+      </button>
+      <button class="view-toggle px-4 py-2 rounded-lg font-medium transition-colors bg-gray-700 hover:bg-gray-600" data-view="aggregated">
+        📊 Gom món
+      </button>
+    </div>
+  </div>
+  
+  <!-- Orders view -->
+  <main id="orders-view" class="max-w-full mx-auto p-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+      <% orders.forEach(order => { %>
+      <% const ageMinutes = Math.floor((Date.now() - new Date(order.createdAt)) / 60000); %>
+      <div class="order-card bg-gray-800 rounded-2xl overflow-hidden <%= ageMinutes > 10 ? 'ring-2 ring-red-500' : '' %>" data-id="<%= order._id %>">
+        <!-- Order header -->
+        <div class="p-4 bg-gradient-to-r <%= order.priority.isVIP || order.priority.isTeacher ? 'from-yellow-600 to-orange-600' : order.priority.isUrgent ? 'from-red-600 to-pink-600' : 'from-blue-600 to-cyan-600' %>">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-2xl">#<%= order.shortId %></h3>
+              <p class="text-sm opacity-80"><%= order.orderType === 'delivery' ? '🛵 Giao' : '🪑 Tại chỗ' %> • <%= order.customer.class || order.customer.name %></p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm opacity-80"><%= ageMinutes %> phút</p>
+              <% if (ageMinutes > 10) { %><p class="text-xs font-bold">⚠️ QUÁ LÂU!</p><% } %>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Items list - Feature 101 -->
+        <div class="p-4 space-y-3">
+          <% order.items.forEach((item, idx) => { %>
+          <div class="kitchen-item flex items-start gap-3 p-3 rounded-xl transition-all <%= item.kitchenStatus === 'done' ? 'bg-green-900/30 opacity-50' : item.kitchenStatus === 'cooking' ? 'bg-yellow-900/30' : 'bg-gray-700' %>" data-order="<%= order._id %>" data-index="<%= idx %>">
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xl font-bold"><%= item.quantity %>x</span>
+                <span class="font-medium text-lg"><%= item.productName %></span>
+              </div>
+              
+              <!-- Customizations -->
+              <% if (item.size?.name) { %><p class="text-sm text-gray-400">Size: <%= item.size.name %></p><% } %>
+              <% if (item.sugarLevel) { %><p class="text-sm text-gray-400">Đường: <%= item.sugarLevel %></p><% } %>
+              <% if (item.iceLevel) { %><p class="text-sm text-gray-400">Đá: <%= item.iceLevel %></p><% } %>
+              <% if (item.selectedToppings?.length) { %><p class="text-sm text-gray-400">Topping: <%= item.selectedToppings.map(t => t.name).join(', ') %></p><% } %>
+              
+              <!-- Feature 111: Note displayed prominently -->
+              <% if (item.note) { %>
+              <p class="mt-2 p-2 bg-orange-600 rounded-lg text-sm font-bold">📝 <%= item.note.toUpperCase() %></p>
+              <% } %>
+            </div>
+            
+            <!-- Item status buttons - Features 105-106 -->
+            <div class="flex flex-col gap-2">
+              <% if (item.kitchenStatus === 'pending') { %>
+              <button class="mark-cooking px-3 py-2 bg-yellow-500 text-black rounded-lg font-bold hover:bg-yellow-400 transition-colors" data-order="<%= order._id %>" data-index="<%= idx %>">
+                🍳 Làm
+              </button>
+              <% } else if (item.kitchenStatus === 'cooking') { %>
+              <button class="mark-done px-3 py-2 bg-green-500 text-white rounded-lg font-bold hover:bg-green-400 transition-colors" data-order="<%= order._id %>" data-index="<%= idx %>">
+                ✅ Xong
+              </button>
+              <% } else { %>
+              <!-- Feature 112: Undo button -->
+              <button class="mark-undo px-3 py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-500 transition-colors" data-order="<%= order._id %>" data-index="<%= idx %>">
+                ↩️
+              </button>
+              <% } %>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+        
+        <!-- Order actions - Feature 107 -->
+        <div class="p-4 bg-gray-700/50 flex gap-3">
+          <button class="complete-order flex-1 px-4 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold text-lg transition-colors" data-id="<%= order._id %>">
+            ✅ XONG ĐƠN
+          </button>
+          <!-- Feature 113: Call for help -->
+          <button class="call-help px-4 py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold transition-colors" data-id="<%= order._id %>" title="Gọi hỗ trợ">
+            🆘
+          </button>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+    
+    <% if (orders.length === 0) { %>
+    <div class="text-center py-20">
+      <div class="text-8xl mb-6">👨‍🍳</div>
+      <h3 class="text-2xl font-bold mb-2">Không có món cần làm</h3>
+      <p class="text-gray-400">Đơn mới sẽ tự động xuất hiện</p>
+    </div>
+    <% } %>
+  </main>
+  
+  <!-- Feature 102: Aggregated view -->
+  <main id="aggregated-view" class="max-w-full mx-auto p-4 hidden">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <% aggregatedItems.forEach(item => { %>
+      <div class="bg-gray-800 rounded-2xl p-6 text-center">
+        <p class="text-5xl font-bold text-orange-500 mb-2"><%= item.totalQuantity %></p>
+        <p class="font-bold text-lg mb-1"><%= item.productName %></p>
+        <% if (item.size) { %><p class="text-sm text-gray-400"><%= item.size %></p><% } %>
+        <% if (item.sugarLevel) { %><p class="text-sm text-gray-400">Đường: <%= item.sugarLevel %></p><% } %>
+        <% if (item.iceLevel) { %><p class="text-sm text-gray-400">Đá: <%= item.iceLevel %></p><% } %>
+        <div class="mt-3 text-xs text-gray-500">
+          <%= item.orders.length %> đơn
+        </div>
+      </div>
+      <% }); %>
+    </div>
+  </main>
+</div>
+
+<!-- Stock management modal - Feature 108-109 -->
+<div id="stock-modal" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/70" onclick="document.getElementById('stock-modal').classList.add('hidden')"></div>
+  <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-2xl mx-auto bg-gray-800 rounded-2xl overflow-hidden">
+    <div class="p-4 bg-gray-700 flex items-center justify-between">
+      <h3 class="font-bold text-lg">📦 Quản lý kho</h3>
+      <button onclick="document.getElementById('stock-modal').classList.add('hidden')" class="p-2 hover:bg-gray-600 rounded-lg">✕</button>
+    </div>
+    <div class="p-4 max-h-[60vh] overflow-y-auto">
+      <div class="space-y-2">
+        <% products.forEach(product => { %>
+        <div class="flex items-center justify-between p-3 bg-gray-700 rounded-xl">
+          <div>
+            <p class="font-medium"><%= product.name %></p>
+            <p class="text-sm text-gray-400">Còn: <%= product.inventory.currentStock %></p>
+          </div>
+          <button class="toggle-availability px-4 py-2 rounded-lg font-medium transition-colors <%= product.inventory.isAvailable ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500' %>" 
+            data-id="<%= product._id %>" 
+            data-available="<%= product.inventory.isAvailable %>">
+            <%= product.inventory.isAvailable ? '✅ Còn hàng' : '❌ Hết hàng' %>
+          </button>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Feature 74: Audio notification -->
+<audio id="notification-sound" preload="auto">
+  <source src="/sounds/kitchen-bell.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Feature 194: Keep screen awake -->
+<script>
+  // Wake Lock API
+  async function requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator) {
+        await navigator.wakeLock.request('screen');
+        console.log('Screen wake lock activated');
+      }
+    } catch (err) {
+      console.log('Wake lock failed:', err);
+    }
+  }
+  requestWakeLock();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') requestWakeLock();
+  });
+</script>
+<script src="/js/kitchen.js"></script>
+` }) %>

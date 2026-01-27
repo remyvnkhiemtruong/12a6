@@ -1,0 +1,75 @@
+<%- include('../layouts/main', { body: `
+<div class="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-primary-500 to-primary-700">
+  <div class="w-full max-w-md">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
+      <!-- Header -->
+      <div class="p-8 text-center bg-gradient-to-r from-primary-500 to-primary-600 text-white">
+        <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">
+          🍜
+        </div>
+        <h1 class="font-display font-bold text-2xl mb-1">Đăng nhập</h1>
+        <p class="text-sm opacity-80">Hệ thống quản lý Hội Trại Xuân</p>
+      </div>
+      
+      <!-- Form -->
+      <div class="p-8">
+        <% if (error) { %>
+        <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+          ❌ <%= error === 'invalid' ? 'Sai tên đăng nhập hoặc mật khẩu' : error %>
+        </div>
+        <% } %>
+        
+        <form action="/api/auth/login" method="POST" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên đăng nhập</label>
+            <input type="text" name="username" required autofocus
+              class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-xl border-none focus:ring-2 focus:ring-primary-500 transition-all"
+              placeholder="VD: cashier1">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mật khẩu</label>
+            <div class="relative">
+              <input type="password" name="password" id="password" required
+                class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-xl border-none focus:ring-2 focus:ring-primary-500 transition-all"
+                placeholder="••••••••">
+              <button type="button" id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          
+          <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all ripple">
+            Đăng nhập
+          </button>
+        </form>
+        
+        <div class="mt-6 text-center">
+          <a href="/" class="text-sm text-gray-500 hover:text-primary-500 transition-colors">
+            ← Quay lại trang menu
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Role hints -->
+    <div class="mt-6 text-center text-white/70 text-sm">
+      <p>Tài khoản mặc định:</p>
+      <div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+        <span>👨‍💼 admin / admin123</span>
+        <span>🧾 cashier / cashier123</span>
+        <span>🍳 kitchen / kitchen123</span>
+        <span>🛵 shipper / shipper123</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Toggle password visibility
+  document.getElementById('toggle-password')?.addEventListener('click', () => {
+    const input = document.getElementById('password');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  });
+</script>
+` }) %>

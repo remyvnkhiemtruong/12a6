@@ -1,0 +1,237 @@
+<%- include('../layouts/main', { body: `
+<header class="sticky-header shadow-sm">
+  <div class="max-w-2xl mx-auto px-4 py-4">
+    <div class="flex items-center gap-4">
+      <a href="/" class="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </a>
+      <div>
+        <h1 class="font-display font-bold text-xl">Đơn hàng #<%= order.shortId %></h1>
+        <p class="text-sm text-gray-500"><%= order.orderNumber %></p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 py-6 pb-24">
+  <!-- Feature 62-63: Order status timeline -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6">
+    <h2 class="font-bold mb-4">Trạng thái đơn hàng</h2>
+    
+    <div class="relative">
+      <!-- Progress line -->
+      <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+      <div class="absolute left-4 top-0 w-0.5 bg-primary-500 transition-all" id="progress-line" style="height: <%= 
+        order.status === 'pending' ? '12%' : 
+        order.status === 'confirmed' ? '28%' : 
+        order.status === 'cooking' ? '44%' : 
+        order.status === 'ready' ? '60%' : 
+        order.status === 'delivering' ? '78%' : 
+        order.status === 'completed' ? '100%' : '0%' 
+      %>;"></div>
+      
+      <!-- Timeline items -->
+      <div class="space-y-6 relative">
+        <!-- Pending -->
+        <div class="flex gap-4 items-start">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 <%= order.status !== 'cancelled' ? 'bg-primary-500 text-white' : 'bg-gray-300 text-gray-500' %>">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <p class="font-medium">Chờ xác nhận</p>
+            <p class="text-sm text-gray-500">Đơn hàng đang chờ thu ngân duyệt</p>
+          </div>
+        </div>
+        
+        <!-- Confirmed -->
+        <div class="flex gap-4 items-start">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 <%= ['confirmed','cooking','ready','delivering','completed'].includes(order.status) ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400' %>">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <p class="font-medium">Đã xác nhận</p>
+            <p class="text-sm text-gray-500">Đơn hàng đã được gửi đến bếp</p>
+          </div>
+        </div>
+        
+        <!-- Cooking -->
+        <div class="flex gap-4 items-start">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 <%= ['cooking','ready','delivering','completed'].includes(order.status) ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400' %>">
+            🍳
+          </div>
+          <div>
+            <p class="font-medium">Đang chế biến</p>
+            <p class="text-sm text-gray-500">Bếp đang nấu món cho bạn</p>
+          </div>
+        </div>
+        
+        <!-- Ready -->
+        <div class="flex gap-4 items-start">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 <%= ['ready','delivering','completed'].includes(order.status) ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400' %>">
+            ✅
+          </div>
+          <div>
+            <p class="font-medium">Đã xong</p>
+            <p class="text-sm text-gray-500"><%= order.orderType === 'delivery' ? 'Shipper đang đến lấy' : 'Vui lòng đến quầy nhận' %></p>
+          </div>
+        </div>
+        
+        <% if (order.orderType === 'delivery') { %>
+        <!-- Delivering -->
+        <div class="flex gap-4 items-start">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 <%= ['delivering','completed'].includes(order.status) ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400' %>">
+            🛵
+          </div>
+          <div>
+            <p class="font-medium">Đang giao</p>
+            <p class="text-sm text-gray-500">Shipper đang trên đường đến</p>
+            <% if (order.shipper.assignedTo) { %>
+            <div class="mt-2 flex items-center gap-2">
+              <span class="text-sm">Shipper: <strong><%= order.shipper.assignedTo.displayName %></strong></span>
+              <% if (order.shipper.assignedTo.phone) { %>
+              <!-- Feature 67: Call shipper -->
+              <a href="tel:<%= order.shipper.assignedTo.phone %>" class="p-1.5 bg-green-500 text-white rounded-full">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+              </a>
+              <% } %>
+            </div>
+            <% } %>
+          </div>
+        </div>
+        <% } %>
+        
+        <!-- Completed -->
+        <div class="flex gap-4 items-start">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 <%= order.status === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400' %>">
+            🎉
+          </div>
+          <div>
+            <p class="font-medium">Hoàn tất</p>
+            <p class="text-sm text-gray-500">Cảm ơn bạn đã ủng hộ!</p>
+          </div>
+        </div>
+        
+        <% if (order.status === 'cancelled') { %>
+        <!-- Cancelled -->
+        <div class="flex gap-4 items-start">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-red-500 text-white">
+            ❌
+          </div>
+          <div>
+            <p class="font-medium text-red-500">Đã hủy</p>
+            <p class="text-sm text-gray-500"><%= order.cancellation?.reason || 'Đơn hàng đã bị hủy' %></p>
+          </div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Feature 65: Estimated time -->
+  <% if (order.estimatedReadyTime && ['pending','confirmed','cooking'].includes(order.status)) { %>
+  <div class="bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-200 dark:border-secondary-800 rounded-2xl p-4 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="text-2xl">⏰</div>
+      <div>
+        <p class="font-medium text-secondary-800 dark:text-secondary-200">Dự kiến hoàn thành</p>
+        <p class="text-lg font-bold text-secondary-600"><%= new Date(order.estimatedReadyTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) %></p>
+      </div>
+    </div>
+  </div>
+  <% } %>
+  
+  <!-- Order details -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm mb-6">
+    <h3 class="font-bold mb-3">Chi tiết đơn hàng</h3>
+    <div class="space-y-3">
+      <% order.items.forEach(item => { %>
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <p class="font-medium"><%= item.quantity %>x <%= item.productName %></p>
+          <% if (item.size?.name) { %><p class="text-xs text-gray-500">Size: <%= item.size.name %></p><% } %>
+          <% if (item.selectedToppings?.length) { %><p class="text-xs text-gray-500">Topping: <%= item.selectedToppings.map(t => t.name).join(', ') %></p><% } %>
+          <% if (item.note) { %><p class="text-xs text-orange-500">📝 <%= item.note %></p><% } %>
+        </div>
+        <p class="font-medium"><%= formatCurrency(item.itemTotal) %></p>
+      </div>
+      <% }); %>
+    </div>
+    <hr class="my-4 border-gray-100 dark:border-gray-700">
+    <div class="space-y-2">
+      <div class="flex justify-between text-sm">
+        <span class="text-gray-500">Tạm tính</span>
+        <span><%= formatCurrency(order.pricing.subtotal) %></span>
+      </div>
+      <% if (order.pricing.voucher?.discount) { %>
+      <div class="flex justify-between text-sm text-green-600">
+        <span>Giảm giá (<%= order.pricing.voucher.code %>)</span>
+        <span>-<%= formatCurrency(order.pricing.voucher.discount) %></span>
+      </div>
+      <% } %>
+      <div class="flex justify-between font-bold text-lg">
+        <span>Tổng cộng</span>
+        <span class="text-primary-500"><%= formatCurrency(order.pricing.total) %></span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Customer info -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm mb-6">
+    <h3 class="font-bold mb-3">Thông tin nhận hàng</h3>
+    <div class="space-y-2 text-sm">
+      <p><strong>Tên:</strong> <%= order.customer.name %></p>
+      <p><strong>SĐT:</strong> <a href="tel:<%= order.customer.phone %>" class="text-primary-500"><%= order.customer.phone %></a></p>
+      <% if (order.customer.class) { %><p><strong>Lớp:</strong> <%= order.customer.class %></p><% } %>
+      <% if (order.deliveryLocation) { %><p><strong>Địa điểm:</strong> <%= order.deliveryLocation %></p><% } %>
+      <p><strong>Hình thức:</strong> <%= order.orderType === 'delivery' ? 'Giao tận nơi' : 'Ăn tại chỗ' %></p>
+    </div>
+  </div>
+  
+  <!-- Payment status -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm mb-6">
+    <h3 class="font-bold mb-3">Thanh toán</h3>
+    <div class="flex items-center gap-3">
+      <% if (order.payment.status === 'confirmed') { %>
+      <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full text-sm font-medium">✅ Đã thanh toán</span>
+      <% } else if (order.payment.status === 'processing') { %>
+      <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 rounded-full text-sm font-medium">⏳ Đang xác nhận</span>
+      <% } else { %>
+      <span class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full text-sm font-medium">💳 Chưa thanh toán</span>
+      <% } %>
+    </div>
+    
+    <% if (order.payment.status === 'pending') { %>
+    <!-- Show QR again for payment -->
+    <div class="mt-4 text-center">
+      <img src="https://img.vietqr.io/image/<%= config.payment.bankId %>-<%= config.payment.accountNumber %>-compact2.png?amount=<%= order.pricing.total %>&addInfo=<%= encodeURIComponent(config.payment.transferTemplate + ' ' + order.shortId) %>&accountName=<%= encodeURIComponent(config.payment.accountName) %>" 
+        alt="QR Payment" class="w-48 h-48 mx-auto rounded-lg">
+      <p class="text-sm text-gray-500 mt-2">Nội dung CK: <strong><%= config.payment.transferTemplate %> <%= order.shortId %></strong></p>
+      <button id="claim-payment-btn" class="mt-3 px-6 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors">
+        ✅ Tôi đã chuyển khoản
+      </button>
+    </div>
+    <% } %>
+  </div>
+  
+  <!-- Actions -->
+  <div class="flex gap-3">
+    <% if (order.status === 'pending') { %>
+    <!-- Feature 68: Cancel order -->
+    <button id="cancel-order-btn" class="flex-1 py-3 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-xl font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors">
+      Hủy đơn
+    </button>
+    <% } %>
+    
+    <!-- Feature 69: Reorder -->
+    <a href="/" class="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-center rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+      Đặt đơn mới
+    </a>
+  </div>
+</main>
+
+<script>
+  const orderId = '<%= order._id %>';
+  const orderStatus = '<%= order.status %>';
+</script>
+<script src="/js/tracking.js"></script>
+` }) %>

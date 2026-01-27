@@ -1,0 +1,184 @@
+<%- include('../layouts/main', { body: `
+<!-- Features 116-131: Shipper Mobile App -->
+<div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+    <div class="max-w-lg mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="font-display font-bold text-xl text-purple-600">🛵 Shipper</h1>
+          <p class="text-sm text-gray-500"><%= user.displayName %></p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <!-- Today's stats -->
+          <div class="text-center">
+            <p class="text-lg font-bold text-green-500"><%= completedToday %></p>
+            <p class="text-xs text-gray-400">Đã giao</p>
+          </div>
+          
+          <button id="logout-btn" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-red-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Tabs -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 sticky top-16 z-30">
+    <div class="max-w-lg mx-auto px-4">
+      <div class="flex">
+        <button class="shipper-tab flex-1 py-3 text-center font-medium border-b-2 transition-colors border-purple-500 text-purple-600" data-tab="available">
+          📦 Chờ lấy (<span id="available-count"><%= availableOrders.length %></span>)
+        </button>
+        <button class="shipper-tab flex-1 py-3 text-center font-medium border-b-2 transition-colors border-transparent text-gray-500 hover:text-gray-700" data-tab="my-orders">
+          🚴 Đang giao (<span id="my-count"><%= myOrders.length %></span>)
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <main class="max-w-lg mx-auto px-4 py-4 pb-24">
+    <!-- Feature 116: Available orders -->
+    <div id="available-orders" class="space-y-3">
+      <% if (availableOrders.length === 0) { %>
+      <div class="text-center py-12">
+        <div class="text-5xl mb-4">📭</div>
+        <h3 class="font-medium text-lg mb-2">Không có đơn chờ lấy</h3>
+        <p class="text-gray-500">Đơn mới sẽ hiển thị khi bếp làm xong</p>
+      </div>
+      <% } else { %>
+      <% availableOrders.forEach(order => { %>
+      <div class="available-order bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden" data-id="<%= order._id %>">
+        <div class="p-4">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <h3 class="font-bold text-lg">#<%= order.shortId %></h3>
+              <p class="text-sm text-gray-500"><%= order.customer.name %> • <%= order.customer.class || 'Khách' %></p>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-lg text-green-600"><%= formatCurrency(order.pricing.total) %></p>
+              <% if (order.priority.isVIP || order.priority.isTeacher) { %>
+              <span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded-full">⭐ VIP</span>
+              <% } %>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
+            <span>📍</span>
+            <span><%= order.deliveryLocation || 'Chưa rõ địa điểm' %></span>
+          </div>
+          
+          <!-- Feature 117: Grab order button -->
+          <button class="grab-order w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-colors" data-id="<%= order._id %>">
+            🛵 Nhận đơn này
+          </button>
+        </div>
+      </div>
+      <% }); %>
+      <% } %>
+    </div>
+    
+    <!-- Feature 118: My orders -->
+    <div id="my-orders" class="space-y-3 hidden">
+      <% if (myOrders.length === 0) { %>
+      <div class="text-center py-12">
+        <div class="text-5xl mb-4">🛵</div>
+        <h3 class="font-medium text-lg mb-2">Chưa có đơn đang giao</h3>
+        <p class="text-gray-500">Nhận đơn từ tab "Chờ lấy" để bắt đầu</p>
+      </div>
+      <% } else { %>
+      <% myOrders.forEach(order => { %>
+      <div class="my-order bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden" data-id="<%= order._id %>">
+        <div class="p-4 bg-gradient-to-r <%= order.status === 'delivering' ? 'from-purple-500 to-pink-500' : 'from-blue-500 to-cyan-500' %> text-white">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="font-bold text-xl">#<%= order.shortId %></h3>
+              <p class="text-sm opacity-90"><%= order.status === 'delivering' ? '🏃 Đang giao' : '📦 Chờ lấy hàng' %></p>
+            </div>
+            <p class="font-bold text-xl"><%= formatCurrency(order.pricing.total) %></p>
+          </div>
+        </div>
+        
+        <div class="p-4">
+          <!-- Customer info - Feature 119 -->
+          <div class="mb-4">
+            <h4 class="font-medium mb-2">Thông tin khách hàng</h4>
+            <p class="text-sm"><strong>Tên:</strong> <%= order.customer.name %></p>
+            <p class="text-sm"><strong>Lớp:</strong> <%= order.customer.class || 'N/A' %></p>
+            <p class="text-sm"><strong>Địa điểm:</strong> <%= order.deliveryLocation || 'Chưa rõ' %></p>
+            <!-- Feature 122: Call customer -->
+            <a href="tel:<%= order.customer.phone %>" class="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-green-500 text-white rounded-xl text-sm font-medium">
+              📞 <%= order.customer.phone %>
+            </a>
+          </div>
+          
+          <!-- Order items -->
+          <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+            <h4 class="font-medium mb-2 text-sm">Món cần giao:</h4>
+            <% order.items.forEach(item => { %>
+            <p class="text-sm"><%= item.quantity %>x <%= item.productName %></p>
+            <% }); %>
+          </div>
+          
+          <!-- Actions based on status -->
+          <div class="space-y-2">
+            <% if (order.status === 'ready') { %>
+            <!-- Start delivery -->
+            <button class="start-delivery w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-colors" data-id="<%= order._id %>">
+              🛵 Bắt đầu giao
+            </button>
+            <% } else if (order.status === 'delivering') { %>
+            <!-- Feature 123: Arrived -->
+            <button class="arrived w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-colors" data-id="<%= order._id %>">
+              📍 Đã đến nơi
+            </button>
+            
+            <!-- Feature 126-127: Show QR & Complete -->
+            <a href="/shipper/order/<%= order._id %>" class="block w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-center transition-colors">
+              💳 Thu tiền & Hoàn tất
+            </a>
+            
+            <!-- Feature 124-125: Problem buttons -->
+            <div class="flex gap-2">
+              <button class="no-answer flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl text-sm font-medium transition-colors" data-id="<%= order._id %>">
+                📵 Không nghe máy
+              </button>
+              <button class="delivery-failed flex-1 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-medium transition-colors" data-id="<%= order._id %>">
+                ❌ Giao thất bại
+              </button>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <% }); %>
+      <% } %>
+    </div>
+  </main>
+  
+  <!-- Navigation -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 z-40">
+    <div class="max-w-lg mx-auto px-4 py-2">
+      <div class="flex justify-around">
+        <a href="/shipper" class="flex flex-col items-center gap-1 p-2 text-purple-600">
+          <span class="text-xl">🏠</span>
+          <span class="text-xs font-medium">Trang chủ</span>
+        </a>
+        <a href="/shipper/history" class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-gray-600">
+          <span class="text-xl">📜</span>
+          <span class="text-xs font-medium">Lịch sử</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- Feature 74: Audio notification -->
+<audio id="notification-sound" preload="auto">
+  <source src="/sounds/notification.mp3" type="audio/mpeg">
+</audio>
+
+<script src="/js/shipper.js"></script>
+` }) %>
