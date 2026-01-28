@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'Lỗi hệ thống' %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+  <div class="text-center max-w-md">
+    <div class="text-8xl mb-6">⚠️</div>
+    <h1 class="text-4xl font-bold text-gray-800 mb-2">500</h1>
+    <p class="text-lg text-gray-600 mb-2">Đã có lỗi xảy ra</p>
+    <% if (typeof message !== 'undefined' && process.env.NODE_ENV !== 'production') { %>
+    <p class="text-sm text-red-500 mb-6 font-mono bg-red-50 p-3 rounded-lg"><%= message %></p>
+    <% } %>
+    <div class="flex gap-3 justify-center">
+      <button onclick="location.reload()" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors">
+        🔄 Thử lại
+      </button>
+      <a href="/" class="px-6 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors">
+        ← Về trang chủ
+      </a>
+    </div>
+  </div>
+</body>
+</html>

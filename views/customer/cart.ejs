@@ -1,0 +1,198 @@
+<%- include('../layouts/main', { body: `
+<header class="sticky-header shadow-sm">
+  <div class="max-w-2xl mx-auto px-4 py-4">
+    <div class="flex items-center gap-4">
+      <a href="/" class="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </a>
+      <h1 class="font-display font-bold text-xl">Giỏ hàng</h1>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 py-4 pb-32">
+  <!-- Cart items (rendered by JS from LocalStorage) -->
+  <div id="cart-items" class="space-y-3">
+    <!-- Dynamic content -->
+  </div>
+  
+  <!-- Empty cart state -->
+  <div id="empty-cart" class="text-center py-16 hidden">
+    <div class="text-6xl mb-4">🛒</div>
+    <h3 class="font-medium text-lg mb-2">Giỏ hàng trống</h3>
+    <p class="text-gray-500 mb-4">Hãy thêm món ngon vào giỏ nhé!</p>
+    <a href="/" class="inline-block bg-primary-500 text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-600 transition-colors">
+      Xem thực đơn
+    </a>
+  </div>
+  
+  <!-- Feature 47: Voucher input -->
+  <div id="voucher-section" class="mt-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
+      <h3 class="font-medium mb-3">Mã giảm giá</h3>
+      <div class="flex gap-2">
+        <input type="text" id="voucher-input" placeholder="Nhập mã voucher" 
+          class="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl border-none text-sm focus:ring-2 focus:ring-primary-500">
+        <button id="apply-voucher" class="px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors">
+          Áp dụng
+        </button>
+      </div>
+      <div id="voucher-result" class="mt-2 text-sm hidden"></div>
+    </div>
+  </div>
+  
+  <!-- Feature 49: Order type selection -->
+  <div id="order-type-section" class="mt-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
+      <h3 class="font-medium mb-3">Hình thức nhận hàng</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="cursor-pointer">
+          <input type="radio" name="orderType" value="delivery" class="hidden peer" checked>
+          <div class="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-center peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-900/20 transition-all">
+            <div class="text-2xl mb-1">🛵</div>
+            <div class="font-medium text-sm">Giao tận nơi</div>
+          </div>
+        </label>
+        <label class="cursor-pointer">
+          <input type="radio" name="orderType" value="dine_in" class="hidden peer">
+          <div class="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-center peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-900/20 transition-all">
+            <div class="text-2xl mb-1">🪑</div>
+            <div class="font-medium text-sm">Ăn tại chỗ</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Feature 50-52: Customer info form -->
+  <div id="customer-form-section" class="mt-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
+      <h3 class="font-medium mb-3">Thông tin nhận hàng</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="text-sm text-gray-500 dark:text-gray-400">Tên của bạn *</label>
+          <input type="text" id="customer-name" placeholder="VD: Nguyễn Văn A" 
+            class="w-full mt-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 rounded-xl border-none text-sm focus:ring-2 focus:ring-primary-500">
+        </div>
+        <div>
+          <label class="text-sm text-gray-500 dark:text-gray-400">Số điện thoại * (10 số)</label>
+          <input type="tel" id="customer-phone" placeholder="VD: 0901234567" maxlength="10"
+            class="w-full mt-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 rounded-xl border-none text-sm focus:ring-2 focus:ring-primary-500">
+        </div>
+        <div>
+          <label class="text-sm text-gray-500 dark:text-gray-400">Lớp</label>
+          <input type="text" id="customer-class" placeholder="VD: 12A6" 
+            class="w-full mt-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 rounded-xl border-none text-sm focus:ring-2 focus:ring-primary-500">
+        </div>
+        <div id="delivery-location-field">
+          <label class="text-sm text-gray-500 dark:text-gray-400">Địa điểm giao hàng</label>
+          <select id="delivery-location" class="w-full mt-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 rounded-xl border-none text-sm focus:ring-2 focus:ring-primary-500">
+            <option value="">Chọn địa điểm...</option>
+            <option value="Dãy A">Dãy A</option>
+            <option value="Dãy B">Dãy B</option>
+            <option value="Dãy C">Dãy C</option>
+            <option value="Sân trường">Sân trường</option>
+            <option value="Canteen">Canteen</option>
+            <option value="Cổng trường">Cổng trường</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Feature 208: Gift option -->
+  <div id="gift-section" class="mt-4 hidden">
+    <label class="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm cursor-pointer">
+      <input type="checkbox" id="is-gift" class="w-5 h-5 rounded border-gray-300 text-primary-500 focus:ring-primary-500">
+      <div>
+        <span class="font-medium">🎁 Gửi tặng Crush</span>
+        <p class="text-xs text-gray-500">Ẩn danh người tặng, kèm lời nhắn</p>
+      </div>
+    </label>
+    <div id="gift-fields" class="mt-3 hidden">
+      <textarea id="gift-message" placeholder="Lời nhắn cho người nhận..." rows="2"
+        class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-primary-500"></textarea>
+    </div>
+  </div>
+</main>
+
+<!-- Fixed checkout footer -->
+<div id="checkout-footer" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-4 z-40 hidden">
+  <div class="max-w-2xl mx-auto">
+    <!-- Order summary -->
+    <div class="flex justify-between text-sm mb-2">
+      <span class="text-gray-500">Tạm tính</span>
+      <span id="subtotal">0 đ</span>
+    </div>
+    <div id="discount-row" class="flex justify-between text-sm mb-2 text-green-600 hidden">
+      <span>Giảm giá</span>
+      <span id="discount-amount">-0 đ</span>
+    </div>
+    <div class="flex justify-between font-bold text-lg mb-4">
+      <span>Tổng cộng</span>
+      <span class="text-primary-500" id="total">0 đ</span>
+    </div>
+    
+    <!-- Submit button -->
+    <button id="checkout-btn" class="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white py-3.5 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all ripple disabled:opacity-50 disabled:cursor-not-allowed">
+      Đặt hàng
+    </button>
+  </div>
+</div>
+
+<!-- Feature 54-58: Payment QR Modal -->
+<div id="payment-modal" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+  <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <h2 class="font-display font-bold text-xl mb-2">Đặt hàng thành công!</h2>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">Mã đơn: <span id="order-id" class="font-bold text-primary-500"></span></p>
+      
+      <!-- QR Code -->
+      <div class="bg-gray-50 dark:bg-gray-700 rounded-2xl p-4 mb-4">
+        <p class="text-sm font-medium mb-2">Quét mã để thanh toán</p>
+        <img id="qr-image" src="" alt="QR Payment" class="w-48 h-48 mx-auto rounded-lg">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Số tiền: <span id="qr-amount" class="font-bold"></span></p>
+      </div>
+      
+      <!-- Copy buttons -->
+      <div class="grid grid-cols-2 gap-2 mb-4">
+        <button id="copy-account" class="p-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          📋 Sao chép STK
+        </button>
+        <button id="copy-content" class="p-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          📋 Sao chép ND
+        </button>
+      </div>
+      
+      <!-- Feature 55: Download QR -->
+      <button id="download-qr" class="w-full p-3 bg-gray-100 dark:bg-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors mb-4">
+        📥 Tải ảnh QR
+      </button>
+      
+      <!-- Feature 59: Claim payment -->
+      <button id="claim-payment" class="w-full p-3 bg-primary-500 text-white rounded-xl font-bold hover:bg-primary-600 transition-colors">
+        ✅ Tôi đã chuyển khoản
+      </button>
+      
+      <a id="track-order" href="" class="block mt-3 text-primary-500 text-sm font-medium hover:underline">
+        Theo dõi đơn hàng →
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Config for cart page
+  window.storeConfig = {
+    bankId: '<%= config.payment.bankId %>',
+    accountNumber: '<%= config.payment.accountNumber %>',
+    accountName: '<%= config.payment.accountName %>',
+    transferTemplate: '<%= config.payment.transferTemplate %>'
+  };
+</script>
+<script src="/js/cart.js"></script>
+` }) %>

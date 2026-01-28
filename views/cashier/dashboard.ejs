@@ -1,0 +1,206 @@
+<%- include('../layouts/main', { body: `
+<!-- Feature 73: Cashier Dashboard -->
+<div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <h1 class="font-display font-bold text-xl text-primary-500">🧾 Thu Ngân</h1>
+          <span class="text-sm text-gray-500">Xin chào, <%= user.displayName %></span>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <!-- Feature 215: Online count -->
+          <div class="text-sm text-gray-500">
+            <span class="inline-flex items-center gap-1">
+              <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span id="online-count"><%= onlineStats.total %></span> online
+            </span>
+          </div>
+          
+          <!-- Feature 259: Clock -->
+          <div id="clock" class="font-mono text-lg font-bold text-gray-700 dark:text-gray-300"></div>
+          
+          <!-- Settings -->
+          <a href="/admin" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </a>
+          
+          <!-- Logout -->
+          <button id="logout-btn" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-red-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Stats bar -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+    <div class="max-w-7xl mx-auto px-4 py-3">
+      <div class="flex gap-6 overflow-x-auto">
+        <div class="text-center flex-shrink-0">
+          <p class="text-2xl font-bold text-orange-500"><%= stats.pending %></p>
+          <p class="text-xs text-gray-500">Chờ duyệt</p>
+        </div>
+        <div class="text-center flex-shrink-0">
+          <p class="text-2xl font-bold text-blue-500"><%= stats.confirmed + stats.cooking %></p>
+          <p class="text-xs text-gray-500">Đang làm</p>
+        </div>
+        <div class="text-center flex-shrink-0">
+          <p class="text-2xl font-bold text-purple-500"><%= stats.ready %></p>
+          <p class="text-xs text-gray-500">Sẵn sàng</p>
+        </div>
+        <div class="text-center flex-shrink-0">
+          <p class="text-2xl font-bold text-cyan-500"><%= stats.delivering %></p>
+          <p class="text-xs text-gray-500">Đang giao</p>
+        </div>
+        <div class="text-center flex-shrink-0">
+          <p class="text-2xl font-bold text-green-500"><%= stats.completed %></p>
+          <p class="text-xs text-gray-500">Hoàn tất</p>
+        </div>
+        <div class="text-center flex-shrink-0 border-l border-gray-200 dark:border-gray-700 pl-6">
+          <p class="text-2xl font-bold text-primary-500"><%= formatCurrency(stats.todayRevenue) %></p>
+          <p class="text-xs text-gray-500">Doanh thu hôm nay</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Feature 84: Search bar -->
+  <div class="max-w-7xl mx-auto px-4 py-4">
+    <div class="flex gap-3">
+      <div class="flex-1 relative">
+        <input type="text" id="search-orders" placeholder="Tìm đơn theo SĐT, tên, mã đơn..." 
+          class="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl">
+        <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+      
+      <!-- Feature 85: Status filter -->
+      <select id="status-filter" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl">
+        <option value="all">Tất cả trạng thái</option>
+        <option value="pending">Chờ duyệt</option>
+        <option value="confirmed">Đã duyệt</option>
+        <option value="cooking">Đang nấu</option>
+        <option value="ready">Sẵn sàng</option>
+        <option value="delivering">Đang giao</option>
+        <option value="completed">Hoàn tất</option>
+      </select>
+      
+      <!-- Feature 95: POS Mode -->
+      <a href="/cashier/pos" class="px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Tạo đơn
+      </a>
+    </div>
+  </div>
+  
+  <!-- Orders grid -->
+  <div class="max-w-7xl mx-auto px-4 pb-8">
+    <div id="orders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <% activeOrders.forEach(order => { %>
+      <div class="order-card bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition-all border-l-4 <%= 
+        order.status === 'pending' ? 'border-orange-500' : 
+        order.status === 'confirmed' || order.status === 'cooking' ? 'border-blue-500' : 
+        order.status === 'ready' ? 'border-green-500' : 
+        order.status === 'delivering' ? 'border-purple-500' : 'border-gray-300' 
+      %>" data-id="<%= order._id %>" data-status="<%= order.status %>">
+        
+        <!-- Order header -->
+        <div class="p-4 border-b border-gray-100 dark:border-gray-700">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="font-bold text-lg">#<%= order.shortId %></h3>
+              <!-- Feature 82-83: Priority flags -->
+              <div class="flex gap-1 mt-1">
+                <% if (order.priority.isVIP) { %><span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded-full">⭐ VIP</span><% } %>
+                <% if (order.priority.isUrgent) { %><span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">🔥 Gấp</span><% } %>
+                <% if (order.priority.isTeacher) { %><span class="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">👨‍🏫 GV</span><% } %>
+              </div>
+            </div>
+            <span class="px-2 py-1 rounded-lg text-xs font-medium <%= 
+              order.status === 'pending' ? 'bg-orange-100 text-orange-600' : 
+              order.status === 'confirmed' ? 'bg-blue-100 text-blue-600' : 
+              order.status === 'cooking' ? 'bg-yellow-100 text-yellow-600' : 
+              order.status === 'ready' ? 'bg-green-100 text-green-600' : 
+              order.status === 'delivering' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600' 
+            %>">
+              <%= order.status === 'pending' ? 'Chờ duyệt' : 
+                  order.status === 'confirmed' ? 'Đã duyệt' : 
+                  order.status === 'cooking' ? 'Đang nấu' : 
+                  order.status === 'ready' ? 'Sẵn sàng' : 
+                  order.status === 'delivering' ? 'Đang giao' : order.status %>
+            </span>
+          </div>
+        </div>
+        
+        <!-- Customer info -->
+        <div class="p-4 border-b border-gray-100 dark:border-gray-700">
+          <p class="font-medium"><%= order.customer.name %></p>
+          <p class="text-sm text-gray-500"><%= order.customer.phone %> • <%= order.customer.class || 'Khách' %></p>
+          <p class="text-xs text-gray-400 mt-1"><%= order.orderType === 'delivery' ? '🛵 ' + (order.deliveryLocation || 'Giao hàng') : '🪑 Tại chỗ' %></p>
+        </div>
+        
+        <!-- Items summary -->
+        <div class="p-4 border-b border-gray-100 dark:border-gray-700">
+          <div class="space-y-1 text-sm">
+            <% order.items.slice(0, 3).forEach(item => { %>
+            <p class="truncate"><%= item.quantity %>x <%= item.productName %></p>
+            <% }); %>
+            <% if (order.items.length > 3) { %>
+            <p class="text-gray-400">+<%= order.items.length - 3 %> món khác</p>
+            <% } %>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-4 flex items-center justify-between bg-gray-50 dark:bg-gray-700/50">
+          <div>
+            <p class="font-bold text-primary-500"><%= formatCurrency(order.pricing.total) %></p>
+            <p class="text-xs text-gray-500 <%= order.payment.status !== 'confirmed' ? 'text-red-500' : 'text-green-500' %>">
+              <%= order.payment.status === 'confirmed' ? '✅ Đã TT' : order.payment.status === 'processing' ? '⏳ Chờ TT' : '💳 Chưa TT' %>
+            </p>
+          </div>
+          
+          <!-- Quick actions - Feature 77-78 -->
+          <% if (order.status === 'pending') { %>
+          <div class="flex gap-2">
+            <button class="quick-confirm p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors" data-id="<%= order._id %>" title="Duyệt">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </button>
+            <button class="quick-cancel p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors" data-id="<%= order._id %>" title="Hủy">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <% } %>
+        </div>
+        
+        <!-- Feature 110: Age warning -->
+        <% const ageMinutes = Math.floor((Date.now() - new Date(order.createdAt)) / 60000); %>
+        <% if (ageMinutes > 10 && order.status !== 'completed') { %>
+        <div class="px-4 py-2 bg-red-500 text-white text-xs text-center">
+          ⚠️ Đơn đã chờ <%= ageMinutes %> phút!
+        </div>
+        <% } %>
+      </div>
+      <% }); %>
+    </div>
+    
+    <% if (activeOrders.length === 0) { %>
+    <div class="text-center py-16">
+      <div class="text-6xl mb-4">📭</div>
+      <h3 class="font-medium text-lg mb-2">Không có đơn hàng nào</h3>
+      <p class="text-gray-500">Đơn mới sẽ hiển thị tại đây</p>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Feature 74: Audio notification -->
+<audio id="notification-sound" preload="auto">
+  <source src="/sounds/notification.mp3" type="audio/mpeg">
+</audio>
+
+<script src="/js/cashier.js"></script>
+` }) %>
