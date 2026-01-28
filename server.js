@@ -292,14 +292,17 @@ async function seedInitialData() {
     console.log('⚠️ Please update payment configuration in Admin panel!');
   }
   
+  // Fix: Cleanup broken categories from previous failed seeds
+  await Category.deleteMany({ slug: null });
+
   // Create default categories if none exist
   const categoryCount = await Category.countDocuments();
   if (categoryCount === 0) {
     await Category.insertMany([
-      { name: 'Món Mặn', icon: '🍜', displayOrder: 1, kitchenZone: 'hot_kitchen' },
-      { name: 'Ăn Vặt', icon: '🍿', displayOrder: 2, kitchenZone: 'hot_kitchen' },
-      { name: 'Nước Uống', icon: '🧃', displayOrder: 3, kitchenZone: 'beverage' },
-      { name: 'Tráng Miệng', icon: '🍰', displayOrder: 4, kitchenZone: 'dessert' }
+      { name: 'Món Mặn', slug: 'mon-man', icon: '🍜', displayOrder: 1, kitchenZone: 'hot_kitchen' },
+      { name: 'Ăn Vặt', slug: 'an-vat', icon: '🍿', displayOrder: 2, kitchenZone: 'hot_kitchen' },
+      { name: 'Nước Uống', slug: 'nuoc-uong', icon: '🧃', displayOrder: 3, kitchenZone: 'beverage' },
+      { name: 'Tráng Miệng', slug: 'trang-mieng', icon: '🍰', displayOrder: 4, kitchenZone: 'dessert' }
     ]);
     console.log('✅ Default categories created');
   }
