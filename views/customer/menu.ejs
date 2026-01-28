@@ -235,7 +235,7 @@
 
 <script>
   // Product data for client-side operations
-  window.productsData = <%- JSON.stringify(products.map(p => ({
+  window.productsData = ${JSON.stringify(products.map(p => ({
     _id: p._id,
     name: p.name,
     price: p.price,
@@ -247,7 +247,7 @@
     customizations: p.customizations,
     requiredOptions: p.requiredOptions,
     description: p.description
-  }))) %>;
+  })))};
 </script>
 <script src="/js/customer.js"></script>
 ` }) %>
